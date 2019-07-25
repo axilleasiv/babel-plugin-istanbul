@@ -1,6 +1,6 @@
 {
-  "name": "babel-plugin-istanbul",
-  "version": "5.1.4",
+  "name": "@achil/babel-plugin-istanbul",
+  "version": "5.1.5",
   "author": "Thai Pangsakulyanont @dtinth",
   "license": "BSD-3-Clause",
   "description": "A babel plugin that adds istanbul instrumentation to ES6 code",
@@ -9,10 +9,7 @@
     "lib"
   ],
   "dependencies": {
-    "@babel/helper-plugin-utils": "^7.0.0",
-    "find-up": "^3.0.0",
-    "istanbul-lib-instrument": "^3.3.0",
-    "test-exclude": "^5.2.3"
+    "@achil/istanbul-lib-instrument": "^3.3.1"
   },
   "devDependencies": {
     "@babel/cli": "^7.4.3",
@@ -33,7 +30,7 @@
     "release": "babel src --out-dir lib",
     "pretest": "standard && npm run release",
     "test": "cross-env NODE_ENV=test nyc --reporter=lcov --reporter=text mocha test/*.js",
-    "prepublish": "npm test && npm run release",
+    "prepublish": "npm run release",
     "version": "standard-version"
   },
   "standard": {
@@ -43,7 +40,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/istanbuljs/babel-plugin-istanbul.git"
+    "url": "https://github.com/axilleasiv/babel-plugin-istanbul/tree/repl"
   },
   "keywords": [
     "istanbul",

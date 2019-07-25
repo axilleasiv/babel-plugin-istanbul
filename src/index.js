@@ -1,92 +1,32 @@
-import { realpathSync } from 'fs'
-import { dirname } from 'path'
-import { declare } from '@babel/helper-plugin-utils'
-import { programVisitor } from 'istanbul-lib-instrument'
+const { basename } = require('path');
+const t = require('@babel/types');
+const { programVisitor } = require('@achil/istanbul-lib-instrument');
 
-const testExclude = require('test-exclude')
-const findUp = require('find-up')
-
-function getRealpath (n) {
-  try {
-    return realpathSync(n) || n
-  } catch (e) {
-    return n
-  }
-}
-
-function makeShouldSkip () {
-  let exclude
-  return function shouldSkip (file, opts) {
-    if (!exclude || exclude.cwd !== opts.cwd) {
-      const cwd = getRealpath(process.env.NYC_CWD || process.cwd())
-      const nycConfig = process.env.NYC_CONFIG ? JSON.parse(process.env.NYC_CONFIG) : {}
-
-      let config = {}
-      if (Object.keys(opts).length > 0) {
-        // explicitly configuring options in babel
-        // takes precedence.
-        config = opts
-      } else if (nycConfig.include || nycConfig.exclude) {
-        // nyc was configured in a parent process (keep these settings).
-        config = {
-          include: nycConfig.include,
-          exclude: nycConfig.exclude,
-          // Make sure this is true unless explicitly set to `false`. `undefined` is still `true`.
-          excludeNodeModules: nycConfig.excludeNodeModules !== false
-        }
-      } else {
-        // fallback to loading config from key in package.json.
-        config = {
-          configKey: 'nyc',
-          configPath: dirname(findUp.sync('package.json', { cwd }))
-        }
-      }
-
-      exclude = testExclude(Object.assign(
-        { cwd },
-        config
-      ))
-    }
-    return !exclude.shouldInstrument(file)
-  }
-}
-
-export default declare(api => {
-  api.assertVersion(7)
-
-  const t = api.types
-  const shouldSkip = makeShouldSkip()
+module.exports = function() {
   return {
     visitor: {
       Program: {
-        enter (path) {
-          this.__dv__ = null
-          const realPath = getRealpath(this.file.opts.filename)
-          if (shouldSkip(realPath, this.opts)) {
-            return
+        enter(path, state) {
+          if (state.file.opts.filename !== state.opts.fileName) {
+            return;
           }
-          let { inputSourceMap } = this.opts
-          if (this.opts.useInlineSourceMaps !== false) {
-            if (!inputSourceMap && this.file.inputMap) {
-              inputSourceMap = this.file.inputMap.sourcemap
-            }
-          }
-          this.__dv__ = programVisitor(t, realPath, {
-            coverageVariable: '__coverage__',
-            inputSourceMap
-          })
-          this.__dv__.enter(path)
+          const name = basename(state.opts.fileName);
+
+          this.__dv__ = null;
+          this.__dv__ = programVisitor(t, name, {
+            coverageVariable: state.opts.cvVar,
+            cvIncreaseCb: state.opts.cvIncreaseCb,
+            inputSourceMap: undefined
+          });
+          this.__dv__.enter(path);
         },
-        exit (path) {
+        exit(path) {
           if (!this.__dv__) {
-            return
+            return;
           }
-          const result = this.__dv__.exit(path)
-          if (this.opts.onCover) {
-            this.opts.onCover(getRealpath(this.file.opts.filename), result.fileCoverage)
-          }
+          this.__dv__.exit(path);
         }
       }
     }
-  }
-})
+  };
+};
