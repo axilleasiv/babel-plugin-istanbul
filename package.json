@@ -1,6 +1,6 @@
 {
   "name": "@achil/babel-plugin-istanbul",
-  "version": "5.1.5",
+  "version": "5.1.6",
   "author": "Thai Pangsakulyanont @dtinth",
   "license": "BSD-3-Clause",
   "description": "A babel plugin that adds istanbul instrumentation to ES6 code",
@@ -9,7 +9,7 @@
     "lib"
   ],
   "dependencies": {
-    "@achil/istanbul-lib-instrument": "^3.3.1"
+    "@achil/istanbul-lib-instrument": "^3.3.2"
   },
   "devDependencies": {
     "@babel/cli": "^7.4.3",
